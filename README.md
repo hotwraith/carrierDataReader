@@ -32,3 +32,4 @@ Requires [Python 3.x](https://www.python.org/downloads/)
 
 - The script can only read journals from the current or past sessions, i.e. it is unable to know the info about your carrier state if you're not in game or haven't been recently.
 - E:D journals are specific to each machine you're playing on, if you last played on another computer/device you might notice some difference with reality.
+- This works only on Windows atm
