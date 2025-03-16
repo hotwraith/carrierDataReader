@@ -116,13 +116,14 @@ def ReadJournal():
                     exit = False
                 #print(data)
                     
-                for i in range(len(important)):
+                for i in range(len(important)-1, 0, -1):
                     jsonFile = json.dumps(important[i])
                     data = json.loads(jsonFile)
                     data = json.loads(data)
                     if(data['Callsign'] == carrierDB['ID'][z]):
                         somme = 5000000
                         statPrint(serviceCost(somme))
+                        print("This data was collected at: "+data["timestamp"]+"\n")
                         exit = False
                         break
                 why -= 1
