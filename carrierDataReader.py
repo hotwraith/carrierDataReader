@@ -36,7 +36,7 @@ def Menu() :
     test_list = [("Captain", 0), ('Commodities', 0), ('CarrierFuel', 0), ('BlackMarket', 2000000), ('Refuel', 1500000), ('Repair', 1500000), ('Rearm', 1500000), ('VoucherRedemption', 1850000), ('Exploration', 1850000), ('Shipyard', 6500000), ('Outfitting', 5000000), ('VistaGenomics', 1500000), ('PioneerSupplies', 5000000), ('Bartender', 1750000)]
     default = True
     while default:
-        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB ? (type 'EXIT' to end program) : ")
+        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB ? (type 'EXIT' to end program) : ")
         if(selection == "1"):
             #default = False
             ReadJournal()
@@ -46,6 +46,8 @@ def Menu() :
         elif(selection == "3"):
             #default = False
             CarrierRemove()
+        elif(selection == "4"):
+            carrierDB()
         elif(selection == "EXIT"):
             default = False
         else:
