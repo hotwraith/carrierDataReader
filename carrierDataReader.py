@@ -53,7 +53,7 @@ def Menu() :
             #default = False
             CarrierRemove()
         elif(selection == "4"):
-            carrierDB()
+            carrierDBsee()
         elif(selection == "EXIT"):
             default = False
         else:
@@ -161,7 +161,7 @@ def statPrint(somme):
     print("That makes for: "+str(round(data['Finance']['AvailableBalance']/(52.1429*somme), 1))+" years of maintenance")
     print(json.dumps(data['SpaceUsage'], indent=4))
 
-def carrierDB():
+def carrierDBsee():
     try:
         carrierDB = json.load(open("testCallsigns.json", "r"))
         print('The DB currently contains the following carriers:')
@@ -179,7 +179,7 @@ def sync():
             local = os.environ['USERPROFILE']
             infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
             why = len(infolder)-1
-            for z in range(j):
+            for z in range(len(carrierDB['logID']), j):
                 exit = True
                 why = len(infolder)-1
                 while exit:
