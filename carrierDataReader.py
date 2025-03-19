@@ -10,7 +10,8 @@ def addCarrier(initialCarrierDict):
     if(initialCarrierDict == None):
         initialCarrierDict = {
         "ID": [f"{testVariable}"],
-        "shortname": [f"{shortname}"]
+        "shortname": [f"{shortname}"],
+        "logID": []
         }
     else:
         initialCarrierDict["ID"].append(f"{testVariable}")
@@ -39,7 +40,12 @@ def Menu() :
         selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB ? (type 'EXIT' to end program) : ")
         if(selection == "1"):
             #default = False
-            ReadJournal()
+            sync()
+            carrierDB = json.load(open('testCallsigns.json', 'r'))
+            j = len(carrierDB['ID'])
+            for i in range(j):
+                ReadJournal('CarrierStats', i)
+                ReadJournal('CarrierLocation', i)
         elif(selection == "2"):
             #default = False
             CarrierAdd()
@@ -88,7 +94,7 @@ def CarrierRemove():
         else: 
             print("No such possibility")
 
-def ReadJournal():
+def ReadJournal(keypass, z):
     try:
         global data
         carrierDB = json.load(open('testCallsigns.json', 'r'))
@@ -96,39 +102,44 @@ def ReadJournal():
         local = os.environ['USERPROFILE']
         infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
         why = len(infolder)-1
-        for z in range(j):
-            exit = True
-            why = len(infolder)-1
-            while exit:
-                important = []
-                keep_phrase = ["CarrierStats"]
-                try:
-                    with open(infolder[why], 'r') as file:
-                        try:
-                            data = file.readlines()
-                        except UnicodeDecodeError as e:
-                            print(f"Reader threw an {type(e)}, error in carrier DB")
-                    for line in data:
-                        for phrase in keep_phrase:
-                            if phrase in line:
-                                important.append(line)
-                                break
-                except IndexError as e:
-                    print(f"No data was found for this carrier ({carrierDB['shortname'][z]}). Skipping to next one (returned {type(e)})")
+        #for z in range(j):
+        exit = True
+        why = len(infolder)-1
+        while exit:
+            important = []
+            keep_phrase = [f"{keypass}"]
+            try:
+                with open(infolder[why], 'r') as file:
+                    try:
+                        data = file.readlines()
+                    except UnicodeDecodeError as e:
+                        print(f"Reader threw an {type(e)}, error in carrier DB")
+                for line in data:
+                    for phrase in keep_phrase:
+                        if phrase in line:
+                            important.append(line)
+                            break
+            except IndexError as e:
+                print(f"No data was found for this carrier ({carrierDB['shortname'][z]}). Skipping to next one (returned {type(e)})")
+                exit = False
+            #print(data)
+                
+            for i in range(len(important)-1, -1, -1):
+                jsonFile = json.dumps(important[i])
+                data = json.loads(jsonFile)
+                data = json.loads(data)
+                if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierStats'):
+                    somme = 5000000
+                    statPrint(serviceCost(somme))
+                    print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
-                #print(data)
-                    
-                for i in range(len(important)-1, 0, -1):
-                    jsonFile = json.dumps(important[i])
-                    data = json.loads(jsonFile)
-                    data = json.loads(data)
-                    if(data['Callsign'] == carrierDB['ID'][z]):
-                        somme = 5000000
-                        statPrint(serviceCost(somme))
-                        print("This data was collected at: "+data["timestamp"]+"\n")
-                        exit = False
-                        break
-                why -= 1
+                    break
+                if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierLocation'):
+                    print(f"{carrierDB['ID'][z]} is in : {data['StarSystem']}")
+                    print("This data was collected at: "+data["timestamp"]+"\n")
+                    exit = False
+                    break
+            why -= 1
     except (json.decoder.JSONDecodeError, IndexError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
 
@@ -159,6 +170,52 @@ def carrierDB():
     except Exception as e :
         print(f'DB has no elements. Returned {type(e)}')
 
+def sync():
+    try:
+        global data
+        carrierDB = json.load(open('testCallsigns.json', 'r'))
+        j = len(carrierDB['ID'])
+        if(j > len(carrierDB['logID'])):
+            local = os.environ['USERPROFILE']
+            infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
+            why = len(infolder)-1
+            for z in range(j):
+                exit = True
+                why = len(infolder)-1
+                while exit:
+                    important = []
+                    keep_phrase = ["CarrierStats"]
+                    try:
+                        with open(infolder[why], 'r') as file:
+                            try:
+                                data = file.readlines()
+                            except UnicodeDecodeError as e:
+                                print(f"Reader threw an {type(e)}, error in carrier DB")
+                        for line in data:
+                            for phrase in keep_phrase:
+                                if phrase in line:
+                                    important.append(line)
+                                    break
+                    except IndexError as e:
+                        print(f"No data was found for this carrier ({carrierDB['shortname'][z]}). Skipping to next one (returned {type(e)})")
+                        exit = False
+                    #print(data)
+                        
+                    for i in range(len(important)-1, 0, -1):
+                        jsonFile = json.dumps(important[i])
+                        data = json.loads(jsonFile)
+                        data = json.loads(data)
+                        if(data['Callsign'] == carrierDB['ID'][z]):
+                            carrierID = data['CarrierID']
+                            out_file = open("testCallsigns.json", "w")
+                            carrierDB["logID"].append(carrierID)
+                            print(carrierDB)
+                            json.dump(carrierDB, indent= 4, fp=out_file)
+                            exit = False
+                            break
+                    why -= 1
+    except (json.decoder.JSONDecodeError, IndexError)as e:
+        print(f'Carrier DB is most likely empty. Returned {type(e)}')
 
 if __name__ == '__main__':
     Menu()
