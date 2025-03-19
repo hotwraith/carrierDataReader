@@ -26,6 +26,10 @@ def delCarrier(initialCarrierDict):
     else:
         print(f"Carrier deleted, shortname: {shortname}, ID: {initialCarrierDict['ID'][initialCarrierDict['shortname'].index(f'{shortname}')]}")
         initialCarrierDict["ID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        try:
+            initialCarrierDict["logID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        except IndexError:
+            print(f"{shortname} had no associated logID !")
         #initialCarrierDict["ID"].remove(f"{testVariable}")
         initialCarrierDict["shortname"].remove(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
@@ -41,11 +45,14 @@ def Menu() :
         if(selection == "1"):
             #default = False
             sync()
-            carrierDB = json.load(open('testCallsigns.json', 'r'))
-            j = len(carrierDB['ID'])
-            for i in range(j):
-                ReadJournal('CarrierStats', i)
-                ReadJournal('CarrierLocation', i)
+            try:
+                carrierDB = json.load(open('testCallsigns.json', 'r'))
+                j = len(carrierDB['ID'])
+                for i in range(j):
+                    ReadJournal('CarrierStats', i)
+                    ReadJournal('CarrierLocation', i)
+            except json.decoder.JSONDecodeError as e:
+                pass
         elif(selection == "2"):
             #default = False
             CarrierAdd()
@@ -113,7 +120,8 @@ def ReadJournal(keypass, z):
                     try:
                         data = file.readlines()
                     except UnicodeDecodeError as e:
-                        print(f"Reader threw an {type(e)}, error in carrier DB")
+                        # print(f"Reader threw an {type(e)}, error in carrier DB")
+                        pass
                 for line in data:
                     for phrase in keep_phrase:
                         if phrase in line:
@@ -190,14 +198,15 @@ def sync():
                             try:
                                 data = file.readlines()
                             except UnicodeDecodeError as e:
-                                print(f"Reader threw an {type(e)}, error in carrier DB")
+                                #print(f"Reader threw an {type(e)}, error in carrier DB")
+                                pass
                         for line in data:
                             for phrase in keep_phrase:
                                 if phrase in line:
                                     important.append(line)
                                     break
                     except IndexError as e:
-                        print(f"No data was found for this carrier ({carrierDB['shortname'][z]}). Skipping to next one (returned {type(e)})")
+                        print(f"ERROR: couldn't sync {carrierDB['shortname'][z]} with logID (check for typos)")
                         exit = False
                     #print(data)
                         
@@ -209,11 +218,11 @@ def sync():
                             carrierID = data['CarrierID']
                             out_file = open("testCallsigns.json", "w")
                             carrierDB["logID"].append(carrierID)
-                            print(carrierDB)
                             json.dump(carrierDB, indent= 4, fp=out_file)
                             exit = False
                             break
                     why -= 1
+        print("Carrier DB sync complete ! \n")
     except (json.decoder.JSONDecodeError, IndexError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
 
