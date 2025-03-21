@@ -31,5 +31,7 @@ Requires [Python 3.x](https://www.python.org/downloads/)
 ## Limitations & bugs
 
 - The script can only read journals from the current or past sessions, i.e. it is unable to know the info about your carrier state if you're not in game or haven't been recently.
+- Some events (like 'CarrierLocation') are only present once in the journal, at the very beginning of the session, meaning that any changes during the session might cause some difference between the script output and reality (relogging should fix this).
+    - For the specific case of CarrierLocation/jump events, this should be eventually fixed in a future update. 
 - E:D journals are specific to each machine you're playing on, if you last played on another computer/device you might notice some difference with reality.
 - This works only on Windows atm
