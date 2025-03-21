@@ -4,7 +4,13 @@ import glob
 
 def addCarrier(initialCarrierDict):
     out_file = open("testCallsigns.json", "w")
-    testVariable = input("Carrier iD : ")
+    length = True
+    while length :
+        testVariable = input("Carrier iD : ")
+        if(len(testVariable) == 7):
+            length = False
+        else:
+            print("Carrier ID must be of length 7 (XXX-XXX)")
     testVariable = testVariable.upper()
     shortname = input("Carrier shortname : ")
     if(initialCarrierDict == None):
@@ -24,8 +30,11 @@ def delCarrier(initialCarrierDict):
     if(initialCarrierDict == None):
         print("There are no carriers to delete")
     else:
-        print(f"Carrier deleted, shortname: {shortname}, ID: {initialCarrierDict['ID'][initialCarrierDict['shortname'].index(f'{shortname}')]}")
-        initialCarrierDict["ID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        try:
+            print(f"Carrier deleted, shortname: {shortname}, ID: {initialCarrierDict['ID'][initialCarrierDict['shortname'].index(f'{shortname}')]}")
+            initialCarrierDict["ID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        except ValueError:
+            print("There is no such carrier in the DB")
         try:
             initialCarrierDict["logID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
         except IndexError:
@@ -51,6 +60,7 @@ def Menu() :
                 for i in range(j):
                     ReadJournal('CarrierStats', i)
                     ReadJournal('CarrierLocation', i)
+                    ReadJournal('CarrierJumpRequest', i)
             except json.decoder.JSONDecodeError as e:
                 pass
         elif(selection == "2"):
@@ -147,9 +157,16 @@ def ReadJournal(keypass, z):
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
+                if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']}")
+                    print("This data was collected at: "+data["timestamp"]+"\n")
+                    exit = False
+                    break
             why -= 1
-    except (json.decoder.JSONDecodeError, IndexError)as e:
+    except (json.decoder.JSONDecodeError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
+    except(IndexError) as e:
+        print(f"No {keypass} data found for this carrier : {carrierDB['shortname'][z]}")
 
 def serviceCost(somme):
     for i in range(len(data['Crew'])):
