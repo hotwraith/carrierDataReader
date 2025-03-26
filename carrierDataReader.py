@@ -158,7 +158,7 @@ def ReadJournal(keypass, z):
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
-                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']}")
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} (body: {data['Body']})")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
