@@ -23,6 +23,7 @@ def addCarrier(initialCarrierDict):
         initialCarrierDict["ID"].append(f"{testVariable}")
         initialCarrierDict["shortname"].append(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
+    out_file.close()
 
 def delCarrier(initialCarrierDict):
     out_file = open("testCallsigns.json", "w")
@@ -42,6 +43,7 @@ def delCarrier(initialCarrierDict):
         #initialCarrierDict["ID"].remove(f"{testVariable}")
         initialCarrierDict["shortname"].remove(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
+    out_file.close()
 
     
 def Menu() :
@@ -50,7 +52,7 @@ def Menu() :
     test_list = [("Captain", 0), ('Commodities', 0), ('CarrierFuel', 0), ('BlackMarket', 2000000), ('Refuel', 1500000), ('Repair', 1500000), ('Rearm', 1500000), ('VoucherRedemption', 1850000), ('Exploration', 1850000), ('Shipyard', 6500000), ('Outfitting', 5000000), ('VistaGenomics', 1500000), ('PioneerSupplies', 5000000), ('Bartender', 1750000)]
     default = True
     while default:
-        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB ? (type 'EXIT' to end program) : ")
+        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB, or 5: resync DB (may help with faulty data) ? (type 'EXIT' to end program) : ")
         if(selection == "1"):
             #default = False
             sync()
@@ -71,6 +73,8 @@ def Menu() :
             CarrierRemove()
         elif(selection == "4"):
             carrierDBsee()
+        elif(selection == "5"):
+            resync()
         elif(selection == "EXIT"):
             default = False
         else:
@@ -87,6 +91,7 @@ def CarrierAdd():
         if(truthValue == 'y'):
             fuckingfile = open("testCallsigns.json", "r")
             addCarrier(json.load(fuckingfile))
+            fuckingfile.close()
         elif(truthValue == 'n'):
             value = False
         else: 
@@ -110,6 +115,7 @@ def CarrierRemove():
             value = False
         else: 
             print("No such possibility")
+    fuckingfile.close()
 
 def ReadJournal(keypass, z):
     try:
@@ -237,11 +243,21 @@ def sync():
                             carrierDB["logID"].append(carrierID)
                             json.dump(carrierDB, indent= 4, fp=out_file)
                             exit = False
+                            out_file.close()
                             break
                     why -= 1
         print("Carrier DB sync complete ! \n")
     except (json.decoder.JSONDecodeError, IndexError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
+
+def resync():
+    carrierDB = json.load(open("testCallsigns.json", "r"))
+    out_file = open("testCallsigns.json", "w") 
+    carrierDB['logID'].clear()
+    json.dump(carrierDB, indent= 4, fp=out_file)
+    out_file.close()
+    sync()
+
 
 if __name__ == '__main__':
     Menu()
