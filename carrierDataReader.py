@@ -4,10 +4,16 @@ import glob
 
 def addCarrier(initialCarrierDict):
     out_file = open("testCallsigns.json", "w")
-    testVariable = input("Carrier iD : ")
+    length = True
+    while length :
+        testVariable = input("Carrier iD : ")
+        if(len(testVariable) == 7):
+            length = False
+        else:
+            print("Carrier ID must be of length 7 (XXX-XXX)")
     testVariable = testVariable.upper()
     shortname = input("Carrier shortname : ")
-    if(initialCarrierDict == None):
+    if(initialCarrierDict is None):
         initialCarrierDict = {
         "ID": [f"{testVariable}"],
         "shortname": [f"{shortname}"],
@@ -17,15 +23,19 @@ def addCarrier(initialCarrierDict):
         initialCarrierDict["ID"].append(f"{testVariable}")
         initialCarrierDict["shortname"].append(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
+    out_file.close()
 
 def delCarrier(initialCarrierDict):
     out_file = open("testCallsigns.json", "w")
     shortname = input("Carrier shortname : ")
-    if(initialCarrierDict == None):
+    if(initialCarrierDict is None):
         print("There are no carriers to delete")
     else:
-        print(f"Carrier deleted, shortname: {shortname}, ID: {initialCarrierDict['ID'][initialCarrierDict['shortname'].index(f'{shortname}')]}")
-        initialCarrierDict["ID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        try:
+            print(f"Carrier deleted, shortname: {shortname}, ID: {initialCarrierDict['ID'][initialCarrierDict['shortname'].index(f'{shortname}')]}")
+            initialCarrierDict["ID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
+        except ValueError:
+            print("There is no such carrier in the DB")
         try:
             initialCarrierDict["logID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
         except IndexError:
@@ -33,6 +43,7 @@ def delCarrier(initialCarrierDict):
         #initialCarrierDict["ID"].remove(f"{testVariable}")
         initialCarrierDict["shortname"].remove(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
+    out_file.close()
 
     
 def Menu() :
@@ -41,7 +52,7 @@ def Menu() :
     test_list = [("Captain", 0), ('Commodities', 0), ('CarrierFuel', 0), ('BlackMarket', 2000000), ('Refuel', 1500000), ('Repair', 1500000), ('Rearm', 1500000), ('VoucherRedemption', 1850000), ('Exploration', 1850000), ('Shipyard', 6500000), ('Outfitting', 5000000), ('VistaGenomics', 1500000), ('PioneerSupplies', 5000000), ('Bartender', 1750000)]
     default = True
     while default:
-        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB ? (type 'EXIT' to end program) : ")
+        selection = input("Do you want to 1: consult all carrier data, or 2: add a carrier to the DB, or 3: remove a carrier from the DB, or 4: see carrier DB, or 5: resync DB (may help with faulty data) ? (type 'EXIT' to end program) : ")
         if(selection == "1"):
             #default = False
             sync()
@@ -51,7 +62,8 @@ def Menu() :
                 for i in range(j):
                     ReadJournal('CarrierStats', i)
                     ReadJournal('CarrierLocation', i)
-            except json.decoder.JSONDecodeError as e:
+                    ReadJournal('CarrierJumpRequest', i)
+            except json.decoder.JSONDecodeError:
                 pass
         elif(selection == "2"):
             #default = False
@@ -61,6 +73,8 @@ def Menu() :
             CarrierRemove()
         elif(selection == "4"):
             carrierDBsee()
+        elif(selection == "5"):
+            resync()
         elif(selection == "EXIT"):
             default = False
         else:
@@ -69,7 +83,7 @@ def Menu() :
 def CarrierAdd():
     try:
         addCarrier(json.load(open("testCallsigns.json", "r")))
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         addCarrier(None)
     value = True
     while value:
@@ -77,6 +91,7 @@ def CarrierAdd():
         if(truthValue == 'y'):
             fuckingfile = open("testCallsigns.json", "r")
             addCarrier(json.load(fuckingfile))
+            fuckingfile.close()
         elif(truthValue == 'n'):
             value = False
         else: 
@@ -85,7 +100,7 @@ def CarrierAdd():
 def CarrierRemove():
     try:
         delCarrier(json.load(open("testCallsigns.json", "r")))
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         print("There is no carrier to delete")
     value = True
     while value:
@@ -100,12 +115,12 @@ def CarrierRemove():
             value = False
         else: 
             print("No such possibility")
+    fuckingfile.close()
 
 def ReadJournal(keypass, z):
     try:
         global data
         carrierDB = json.load(open('testCallsigns.json', 'r'))
-        j = len(carrierDB['ID'])
         local = os.environ['USERPROFILE']
         infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
         why = len(infolder)-1
@@ -119,7 +134,7 @@ def ReadJournal(keypass, z):
                 with open(infolder[why], 'r') as file:
                     try:
                         data = file.readlines()
-                    except UnicodeDecodeError as e:
+                    except UnicodeDecodeError as e:  # noqa: F841
                         # print(f"Reader threw an {type(e)}, error in carrier DB")
                         pass
                 for line in data:
@@ -147,9 +162,16 @@ def ReadJournal(keypass, z):
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
+                if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} (body: {data['Body']})")
+                    print("This data was collected at: "+data["timestamp"]+"\n")
+                    exit = False
+                    break
             why -= 1
-    except (json.decoder.JSONDecodeError, IndexError)as e:
+    except (json.decoder.JSONDecodeError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
+    except(IndexError):
+        print(f"No {keypass} data found for this carrier : {carrierDB['shortname'][z]}")
 
 def serviceCost(somme):
     for i in range(len(data['Crew'])):
@@ -197,7 +219,7 @@ def sync():
                         with open(infolder[why], 'r') as file:
                             try:
                                 data = file.readlines()
-                            except UnicodeDecodeError as e:
+                            except UnicodeDecodeError as e:  # noqa: F841
                                 #print(f"Reader threw an {type(e)}, error in carrier DB")
                                 pass
                         for line in data:
@@ -205,7 +227,7 @@ def sync():
                                 if phrase in line:
                                     important.append(line)
                                     break
-                    except IndexError as e:
+                    except IndexError:
                         print(f"ERROR: couldn't sync {carrierDB['shortname'][z]} with logID (check for typos)")
                         exit = False
                     #print(data)
@@ -220,11 +242,21 @@ def sync():
                             carrierDB["logID"].append(carrierID)
                             json.dump(carrierDB, indent= 4, fp=out_file)
                             exit = False
+                            out_file.close()
                             break
                     why -= 1
         print("Carrier DB sync complete ! \n")
     except (json.decoder.JSONDecodeError, IndexError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
+
+def resync():
+    carrierDB = json.load(open("testCallsigns.json", "r"))
+    out_file = open("testCallsigns.json", "w") 
+    carrierDB['logID'].clear()
+    json.dump(carrierDB, indent= 4, fp=out_file)
+    out_file.close()
+    sync()
+
 
 if __name__ == '__main__':
     Menu()

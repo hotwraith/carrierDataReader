@@ -9,10 +9,7 @@
 *spec
 # Files containing potentially important data
 
-*\carrierStats.py
-*\carrierSpecs.py
-*\journalReader.py
-*\testytest.py
+.gitignore
 
 # Folders containing useless/important data
 
