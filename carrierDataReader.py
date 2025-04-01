@@ -13,7 +13,7 @@ def addCarrier(initialCarrierDict):
             print("Carrier ID must be of length 7 (XXX-XXX)")
     testVariable = testVariable.upper()
     shortname = input("Carrier shortname : ")
-    if(initialCarrierDict == None):
+    if(initialCarrierDict is None):
         initialCarrierDict = {
         "ID": [f"{testVariable}"],
         "shortname": [f"{shortname}"],
@@ -28,7 +28,7 @@ def addCarrier(initialCarrierDict):
 def delCarrier(initialCarrierDict):
     out_file = open("testCallsigns.json", "w")
     shortname = input("Carrier shortname : ")
-    if(initialCarrierDict == None):
+    if(initialCarrierDict is None):
         print("There are no carriers to delete")
     else:
         try:
@@ -63,7 +63,7 @@ def Menu() :
                     ReadJournal('CarrierStats', i)
                     ReadJournal('CarrierLocation', i)
                     ReadJournal('CarrierJumpRequest', i)
-            except json.decoder.JSONDecodeError as e:
+            except json.decoder.JSONDecodeError:
                 pass
         elif(selection == "2"):
             #default = False
@@ -83,7 +83,7 @@ def Menu() :
 def CarrierAdd():
     try:
         addCarrier(json.load(open("testCallsigns.json", "r")))
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         addCarrier(None)
     value = True
     while value:
@@ -100,7 +100,7 @@ def CarrierAdd():
 def CarrierRemove():
     try:
         delCarrier(json.load(open("testCallsigns.json", "r")))
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         print("There is no carrier to delete")
     value = True
     while value:
@@ -121,7 +121,6 @@ def ReadJournal(keypass, z):
     try:
         global data
         carrierDB = json.load(open('testCallsigns.json', 'r'))
-        j = len(carrierDB['ID'])
         local = os.environ['USERPROFILE']
         infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
         why = len(infolder)-1
@@ -135,7 +134,7 @@ def ReadJournal(keypass, z):
                 with open(infolder[why], 'r') as file:
                     try:
                         data = file.readlines()
-                    except UnicodeDecodeError as e:
+                    except UnicodeDecodeError as e:  # noqa: F841
                         # print(f"Reader threw an {type(e)}, error in carrier DB")
                         pass
                 for line in data:
@@ -171,7 +170,7 @@ def ReadJournal(keypass, z):
             why -= 1
     except (json.decoder.JSONDecodeError)as e:
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
-    except(IndexError) as e:
+    except(IndexError):
         print(f"No {keypass} data found for this carrier : {carrierDB['shortname'][z]}")
 
 def serviceCost(somme):
@@ -220,7 +219,7 @@ def sync():
                         with open(infolder[why], 'r') as file:
                             try:
                                 data = file.readlines()
-                            except UnicodeDecodeError as e:
+                            except UnicodeDecodeError as e:  # noqa: F841
                                 #print(f"Reader threw an {type(e)}, error in carrier DB")
                                 pass
                         for line in data:
@@ -228,7 +227,7 @@ def sync():
                                 if phrase in line:
                                     important.append(line)
                                     break
-                    except IndexError as e:
+                    except IndexError:
                         print(f"ERROR: couldn't sync {carrierDB['shortname'][z]} with logID (check for typos)")
                         exit = False
                     #print(data)
