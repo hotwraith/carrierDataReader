@@ -60,9 +60,10 @@ def Menu() :
                 carrierDB = json.load(open('testCallsigns.json', 'r'))
                 j = len(carrierDB['ID'])
                 for i in range(j):
+                    pos = []
                     ReadJournal('CarrierStats', i)
-                    ReadJournal('CarrierLocation', i)
-                    ReadJournal('CarrierJumpRequest', i)
+                    pos.append(ReadJournal('CarrierLocation', i))
+                    pos.append(ReadJournal('CarrierJumpRequest', i))                    
             except json.decoder.JSONDecodeError:
                 pass
         elif(selection == "2"):
@@ -158,11 +159,13 @@ def ReadJournal(keypass, z):
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierLocation'):
+                    position = (data['StarSystem'], data['timestamp'])
                     print(f"{carrierDB['ID'][z]} is in : {data['StarSystem']}")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
+                    position = (data['SystemName'], data['timestamp'])
                     print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} (body: {data['Body']})")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
@@ -172,6 +175,10 @@ def ReadJournal(keypass, z):
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
     except(IndexError):
         print(f"No {keypass} data found for this carrier : {carrierDB['shortname'][z]}")
+    try:
+        return position
+    except UnboundLocalError:
+        pass
 
 def serviceCost(somme):
     for i in range(len(data['Crew'])):
