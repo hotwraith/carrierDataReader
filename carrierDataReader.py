@@ -38,10 +38,10 @@ def delCarrier(initialCarrierDict):
             print("There is no such carrier in the DB")
         try:
             initialCarrierDict["logID"].pop(initialCarrierDict["shortname"].index(f"{shortname}"))
-        except IndexError:
+            initialCarrierDict["shortname"].remove(f"{shortname}")
+        except (IndexError, ValueError):
             print(f"{shortname} had no associated logID !")
         #initialCarrierDict["ID"].remove(f"{testVariable}")
-        initialCarrierDict["shortname"].remove(f"{shortname}")
     json.dump(initialCarrierDict, indent= 4, fp=out_file)
     out_file.close()
 
@@ -115,7 +115,6 @@ def CarrierRemove():
             value = False
         else: 
             print("No such possibility")
-    fuckingfile.close()
 
 def ReadJournal(keypass, z):
     try:
@@ -163,7 +162,11 @@ def ReadJournal(keypass, z):
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
-                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} (body: {data['Body']})")
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} ", end="")
+                    try:
+                        print(f"(body: {data['Body']})")
+                    except KeyError as e:
+                        print(f"(Error when searching for body {type(e)})")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
@@ -172,6 +175,8 @@ def ReadJournal(keypass, z):
         print(f'Carrier DB is most likely empty. Returned {type(e)}')
     except(IndexError):
         print(f"No {keypass} data found for this carrier : {carrierDB['shortname'][z]}")
+    except KeyError:
+        pass
 
 def serviceCost(somme):
     for i in range(len(data['Crew'])):
