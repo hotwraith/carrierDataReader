@@ -61,6 +61,7 @@ def Menu() :
                 j = len(carrierDB['ID'])
                 for i in range(j):
                     pos = []
+                    pos = []
                     ReadJournal('CarrierStats', i)
                     pos.append(ReadJournal('CarrierLocation', i))
                     pos.append(ReadJournal('CarrierJumpRequest', i))                    
@@ -170,6 +171,8 @@ def ReadJournal(keypass, z):
                         print(f"(body: {data['Body']})")
                     except KeyError as e:
                         print(f"(Error when searching for body {type(e)})")
+                    position = (data['SystemName'], data['timestamp'])
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} (body: {data['Body']})")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
