@@ -157,12 +157,14 @@ def ReadJournal(keypass, z):
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierLocation'):
-                    print(f"{carrierDB['ID'][z]} is in : {data['StarSystem']}")
+                    system = isSystemLadder(data['StarSystem'])
+                    print(f"{carrierDB['ID'][z]} is in : {system}")
                     print("This data was collected at: "+data["timestamp"]+"\n")
                     exit = False
                     break
                 if(data['CarrierID'] == carrierDB['logID'][z] and keypass == 'CarrierJumpRequest'):
-                    print(f"{carrierDB['ID'][z]} has requested a jump to : {data['SystemName']} ", end="")
+                    system = isSystemLadder(data['SystemName'])
+                    print(f"{carrierDB['ID'][z]} has requested a jump to : {system} ", end="")
                     try:
                         print(f"(body: {data['Body']})")
                     except KeyError as e:
@@ -262,6 +264,30 @@ def resync():
     out_file.close()
     sync()
 
+def isSystemLadder(system):
+    for i in ladder.keys():
+        if(ladder[i] == system):
+            return f"{system} (N{i})"
+    return system
+
 
 if __name__ == '__main__':
+    global ladder 
+    ladder = {0:  "HIP 58832",
+1:   "HD 105341",
+2:   "HD 104495",
+3:   "HIP 57784",
+4:   "HIP 57478 ",
+5:   "HIP 56843",
+6:   "HD 104392 ",
+7:   "HD 102779",
+8:   "HD 102000",
+9:   "HD 104785",
+10:  "HD 105548",
+11:  "HD 107865",
+12:  "Plaa Trua WQ-C d13-0",
+13:  "Plaa Trua QL-B c27-0",
+14:  "Wregoe OP-D b58-0",
+15:  "Wregoe ZE-B c28-2",
+16:  "Gali"}
     Menu()
