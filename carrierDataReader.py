@@ -121,7 +121,7 @@ def ReadJournal(keypass, z):
         global data
         carrierDB = json.load(open('testCallsigns.json', 'r'))
         local = os.environ['USERPROFILE']
-        infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
+        infolder = glob.glob(fr'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
         why = len(infolder)-1
         #for z in range(j):
         exit = True
@@ -214,7 +214,7 @@ def sync():
         j = len(carrierDB['ID'])
         if(j > len(carrierDB['logID'])):
             local = os.environ['USERPROFILE']
-            infolder = glob.glob(f'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
+            infolder = glob.glob(fr'{local}\Saved Games\Frontier Developments\Elite Dangerous\*.log') #this shit doesn't work for general file path smh
             why = len(infolder)-1
             for z in range(len(carrierDB['logID']), j):
                 exit = True
@@ -223,7 +223,9 @@ def sync():
                     important = []
                     keep_phrase = ["CarrierStats"]
                     try:
-                        with open(infolder[why], 'r') as file:
+                        f = infolder[why]
+                        #print(f"Carrier: {carrierDB['ID'][z]}\n file: {f}")
+                        with open(f, 'r') as file:
                             try:
                                 data = file.readlines()
                             except UnicodeDecodeError as e:  # noqa: F841
@@ -239,8 +241,9 @@ def sync():
                         exit = False
                     #print(data)
                         
-                    for i in range(len(important)-1, 0, -1):
-                        jsonFile = json.dumps(important[i])
+                    #for i in range(len(important)-1, 0, -1):
+                    if(len(important)>0):    
+                        jsonFile = json.dumps(important[-1])
                         data = json.loads(jsonFile)
                         data = json.loads(data)
                         if(data['Callsign'] == carrierDB['ID'][z]):
@@ -250,7 +253,7 @@ def sync():
                             json.dump(carrierDB, indent= 4, fp=out_file)
                             exit = False
                             out_file.close()
-                            break
+
                     why -= 1
         print("Carrier DB sync complete ! \n")
     except (json.decoder.JSONDecodeError, IndexError)as e:
