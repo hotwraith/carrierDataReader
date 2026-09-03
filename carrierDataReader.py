@@ -132,6 +132,7 @@ def ReadJournal(keypass, z):
             try:
                 with open(infolder[why], 'r') as file:
                     try:
+                        data = []
                         data = file.readlines()
                     except UnicodeDecodeError as e:  # noqa: F841
                         # print(f"Reader threw an {type(e)}, error in carrier DB")
@@ -227,6 +228,7 @@ def sync():
                         #print(f"Carrier: {carrierDB['ID'][z]}\n file: {f}")
                         with open(f, 'r') as file:
                             try:
+                                data = []
                                 data = file.readlines()
                             except UnicodeDecodeError as e:  # noqa: F841
                                 #print(f"Reader threw an {type(e)}, error in carrier DB")
